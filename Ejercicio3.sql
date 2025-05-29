@@ -20,22 +20,22 @@ CREATE TABLE ejercicio3.curso (
 );
 
 CREATE TABLE ejercicio3.dicta (
-    correo VARCHAR(50) REFERENCES pers(correo),
-    nom VARCHAR(30) REFERENCES curso(nom),
+    correo VARCHAR(50) REFERENCES ejercicio3.pers(correo),
+    nom VARCHAR(30) REFERENCES ejercicio3.curso(nom),
     PRIMARY KEY (correo, nom)
 );
 
 CREATE TABLE ejercicio3.insc (
-    correo VARCHAR(50) REFERENCES pers(correo),
-    nom VARCHAR(30) REFERENCES curso(nom),
-    correoD VARCHAR(50) REFERENCES pers(correo),
+    correo VARCHAR(50) REFERENCES ejercicio3.pers(correo),
+    nom VARCHAR(30) REFERENCES ejercicio3.curso(nom),
+    correoD VARCHAR(50) REFERENCES ejercicio3.pers(correo),
     nota NUMERIC(4,2) CHECK (nota >= 0 AND nota <= 10),
     PRIMARY KEY (correo, nom),
-    FOREIGN KEY (correoD, nom) REFERENCES dicta(correo, nom)
+    FOREIGN KEY (correoD, nom) REFERENCES ejercicio3.dicta(correo, nom)
 );
 
 CREATE TABLE ejercicio3.temas (
-    nom VARCHAR(30) REFERENCES curso(nom),
+    nom VARCHAR(30) REFERENCES ejercicio3.curso(nom),
     tema VARCHAR(100) NOT NULL,
     PRIMARY KEY (nom, tema)
 );
