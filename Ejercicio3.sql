@@ -109,24 +109,20 @@ INSERT INTO ejercicio3.temas VALUES ('C++', 'Punteros y memoria dinámica');
 
 --Guia de Ejercicios
 
-
---Ejercicio 1
-SELECT * FROM ejercicio3.curso
-
---Ejercicio 3
+--Ejercicio 3 - Correo y nombre de todas las personas. 
 SELECT correo, nombre 
 FROM ejercicio3.pers
 
---Ejercicio 4
+--Ejercicio 4 - Cantidad de cursos registrados. 
 SELECT COUNT (*) AS cant
 FROM ejercicio3.curso
 
 
--- Ejercicio 5
+-- Ejercicio 5 - Cantidad de cursos con inscriptos. 
 SELECT COUNT(DISTINCT nom) AS cant 
 FROM ejercicio3.insc
 
--- Ejericicio 6
+-- Ejericicio 6 - Nota máxima obtenida en el curso ’Python I‘. 
 SELECT nota 
 FROM ejercicio3.insc
 WHERE nom = 'Python I'
@@ -137,12 +133,12 @@ SELECT MAX(nota)
 FROM ejercicio3.insc
 WHERE nom = 'Python I'
 
--- 7
+-- 7 - Nombre de los cursos registrados, ordenados ascendentemente por nombre. 
 SELECT nom 
 FROM ejercicio3.curso
 ORDER BY nom ASC
 
--- 8
+-- 8 - Nombre de todos los alumnos, ordenados descendentemente por nombre. 
 SELECT nombre 
 FROM ejercicio3.pers P 
 JOIN ejercicio3.insc I ON P.correo = I.correo
@@ -153,17 +149,18 @@ FROM ejercicio3.pers
 JOIN ejercicio3.insc ON ejercicio3.pers.correo = ejercicio3.insc.correo
 ORDER BY nombre DESC
 
--- 9
+-- 9 - Cursos (todos los datos) cuya carga horaria sea superior a las 40 horas reloj. 
 SELECT * 
 FROM ejercicio3.curso
 WHERE cH > 40
 
--- 10
+-- 10 - Cursos (todos los datos) cuya carga horaria se encuentre entre 40 y 45 horas reloj. 
 SELECT * 
 FROM ejercicio3.curso
 WHERE cH >= 40 AND cH <= 45
 
--- 11
+-- 11 -  Cursos que tienen una carga horaria superior a la del curso “Kotlin I”, 
+-- ordenados descendentemente por cantidad de horas.
 SELECT * 
 FROM ejercicio3.curso
 WHERE cH < (
@@ -173,7 +170,8 @@ WHERE cH < (
 )
 ORDER BY cH DESC
 
--- 12
+-- 12 - Nombre del curso que tiene una carga horaria superior a la de todos 
+-- los cursos que dicta el profesor “pedroibañez@yahoo.com.ar”. 
 SELECT *
 FROM ejercicio3.curso
 WHERE cH > (
@@ -185,24 +183,55 @@ WHERE cH > (
 	LIMIT 1
 )
 
--- 13
+-- 13 - Personas, docentes o alumnos(todos sus datos), que se llamen Rosa. 
 SELECT * 
 FROM ejercicio3.pers
 WHERE nombre LIKE 'Rosa %'
 
--- 14
+-- 14 - Cursos (nombre) junto a los datos del docente que los dicta.
 SELECT c.nom, nomU, p.correo, nombre
 FROM ejercicio3.curso c
 JOIN ejercicio3.dicta d ON c.nom = d.nom
 JOIN ejercicio3.pers p ON p.correo = d.correo
 
--- 15
+-- 15 - Cursos (todos los datos) junto a los datos de los alumnos inscriptos. 
+-- Se deben incluir todos los cursos registrados más allá que no tengan alumnos inscriptos.
 SELECT * 
 FROM ejercicio3.curso c LEFT JOIN ejercicio3.insc i ON c.nom = i.nom
 
--- 16
-SELECT * FROM ejercicio3.dicta 
-SELECT correo
+-- 16 - Docentes (correo) que dictan el curso Python I y/o Python II. 
+SELECT correo, nom
 FROM ejercicio3.dicta 
 WHERE nom = 'Python I' OR nom = 'Python II'
+
+-- 17 - Docentes (correo) que dictan los cursos Python I y Python II. 
+SELECT A.correo, A.nom, B.nom 
+FROM ejercicio3.dicta A, ejercicio3.dicta B
+WHERE A.correo = B.correo and A.nom = 'Python I' and B.nom = 'Python II'
+
+-- 18 - Docentes (todos los datos) que cursaron algún curso de verano.
+SELECT DISTINCT C.correo, nomU, nombre
+FROM ejercicio3.dicta A
+JOIN ejercicio3.insc B ON A.correo = B.correo
+JOIN ejercicio3.pers C ON A.correo = C.correo
+
+-- 19 - Alumnos (correo) que se inscribieron en más de un curso de verano. 
+SELECT DISTINCT A.correo
+FROM ejercicio3.insc A, ejercicio3.insc B
+WHERE A.correo = B.correo and A.nom != B.nom
+
+-- 20 - Docentes (correo) que dictan más de un curso.
+SELECT DISTINCT A.correo
+FROM ejercicio3.dicta A, ejercicio3.dicta B
+WHERE A.correo = B.correo and A.nom != B.nom
+
+-- 21 - Docentes (todos los datos) que dictan más de un curso cuya carga horaria 
+-- sea inferior a 30 horas reloj. 
+SELECT p.*
+FROM ejercicio3.pers p
+JOIN ejercicio3.dicta d ON p.correo = d.correo
+JOIN ejercicio3.curso c ON d.nom = c.nom
+WHERE c.cH < 30
+GROUP BY p.correo, p.nomU, p.nombre
+HAVING COUNT(*) >= 1;
 
