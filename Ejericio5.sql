@@ -1,11 +1,11 @@
 -- Script PostgreSQL para el sistema de Películas
 
 -- Eliminación de tablas si existen
-DROP TABLE IF EXISTS Sigue CASCADE;
-DROP TABLE IF EXISTS Actua CASCADE;
-DROP TABLE IF EXISTS Dirige CASCADE;
-DROP TABLE IF EXISTS Pelicula CASCADE;
-DROP TABLE IF EXISTS Persona CASCADE;
+DROP TABLE IF EXISTS ejercicio5.Sigue CASCADE;
+DROP TABLE IF EXISTS ejercicio5.Actua CASCADE;
+DROP TABLE IF EXISTS ejercicio5.Dirige CASCADE;
+DROP TABLE IF EXISTS ejercicio5.Pelicula CASCADE;
+DROP TABLE IF EXISTS ejercicio5.Persona CASCADE;
 
 -- Creación de tablas
 CREATE TABLE ejercicio5.Persona (
@@ -177,75 +177,144 @@ INSERT INTO ejercicio5.Sigue (idSeguido, idSeguidor) VALUES
 (1, 16), -- Leonardo DiCaprio sigue a Keanu Reeves
 (16, 1); -- Keanu Reeves sigue a Leonardo DiCaprio
 
--- ejericico 1
-SELECT nombre, COUNT(*) AS cant -- cuenta la cantidad de nombres agrupados 
-FROM ejercicio5.Persona p
-NATURAL JOIN ejercicio5.Dirige d 
-NATURAL JOIN ejercicio5.Pelicula peli -- el join entre pelis dirige y persona 
-WHERE genero = 'Ciencia Ficción' -- filtra las pelis de cf
-GROUP BY p.nombre --Agrupa nombres
+-- Consultas 
+-- 1 -  Personas (nombre) junto a la cantidad de películas de Ciencia Ficción (género) que ha dirigido. 
+SELECT nombre, COUNT(*) -- Cuenta los nombres agrupados
+FROM ejercicio5.persona P 
+NATURAL JOIN ejercicio5.dirige D
+NATURAL JOIN ejercicio5.pelicula PEL -- NJ entre pelis, persona y dirige
+WHERE genero = 'Ciencia Ficción' -- Filtra las peliculas de ciencia ficcion
+GROUP BY nombre -- Agrupa las tuplas por nombre
 
--- ejercicio 2
-SELECT nombre-- cuenta la cantidad de nombres agrupados 
-FROM ejercicio5.Persona p
-NATURAL JOIN ejercicio5.Dirige d 
-NATURAL JOIN ejercicio5.Pelicula peli -- el join entre pelis dirige y persona 
-WHERE genero = 'Ciencia Ficción' -- filtra las pelis de cf
-GROUP BY p.nombre
-HAVING COUNT(*) >= 3;
+-- 2 - Personas (nombre) que han dirigido más de 3 películas de Ciencia Ficción (género). 
+SELECT nombre, COUNT (*) 	-- Se agrega el contador al SELECT
+FROM ejercicio5.persona P
+NATURAL JOIN ejercicio5.dirige D
+NATURAL JOIN ejercicio5.pelicula PEL 
+WHERE genero = 'Ciencia Ficción'
+GROUP BY nombre 	-- Agrupa las peliculas por nombre
+HAVING COUNT (*) >= 3	-- La clausula HAVING verifica el resultado de la operacion agregada COUNT 
 
--- ejercicio 3
-SELECT nombre
-FROM ejercicio5.Persona p
-NATURAL JOIN ejercicio5.Actua a
-NATURAL JOIN ejercicio5.Pelicula peli
-WHERE fEstreno > '1990-01-01' AND fEstreno < '1990-12-31'
-GROUP BY p.nombre
+-- 3 - Personas (nombre) que han actuado en más de una película estrenada en el año 1990.
+-- MANERA 1
+SELECT nombre, COUNT(*)
+FROM ejercicio5.persona P
+NATURAL JOIN ejercicio5.actua A
+NATURAL JOIN ejercicio5.pelicula PEL
+WHERE festreno BETWEEN '1990-01-01' and '1990-12-31' 	-- BETWEEN verifica variables en un rango menor y mayor
+GROUP BY nombre
 HAVING COUNT(*) > 1
 
--- ejercicio 4
-SELECT titulo, lema
-FROM ejercicio5.Pelicula p
-NATURAL JOIN ejercicio5.Persona i
-NATURAL JOIN ejercicio5.Actua a
+-- 4 - Películas (título y lema) en las que han actuado solamente argentinos. 
+-- REVISAR
+SELECT titulo, lema, paisnac
+FROM ejercicio5.persona P
+NATURAL JOIN ejercicio5.actua A
+NATURAL JOIN ejercicio5.pelicula PEL
 WHERE paisnac = 'Argentina'
-GROUP BY p.titulo, p.lema
 
--- ejercicio 5
+-- 5 - Título y fecha de estreno de las películas dirigidas por Keanu Reeves.
 SELECT titulo, festreno
-FROM ejercicio5.Pelicula p
-NATURAL JOIN ejercicio5.Persona 
-NATURAL JOIN ejercicio5.Dirige
+FROM ejercicio5.persona P
+NATURAL JOIN ejercicio5.dirige D
+NATURAL JOIN ejercicio5. pelicula PEL
 WHERE nombre = 'Keanu Reeves'
 
--- ejercicio 6 
-SELECT DISTINCT p.*
-FROM ejercicio5.Persona p
-JOIN ejercicio5.Actua a ON p.idp = a.idp 
-JOIN ejercicio5.Dirige d ON p.idp = d.idp
 
--- ejercicio 7
-SELECT DISTINCT p.*
-FROM ejercicio5.Persona p
-WHERE NOT EXISTS (
-	SELECT 1
-	FROM ejercicio5.Pelicula peli
-	WHERE NOT EXISTS (
-		SELECT 1
-		FROM ejercicio5.Actua a
-		WHERE a.idp = p.idp AND a.idpel = peli.idpel
-	)
-)
+-- 6 - Personas (todos sus datos) que han participado como actores y directores en alguna ocasión. 
+SELECT nombre, fechanac, paisnac
+FROM ejercicio5.persona P
+NATURAL JOIN ejercicio5.actua A
+NATURAL JOIN ejercicio5.dirige D
 
--- ejercicio 8
-SELECT DISTINCT p.*
-FROM ejercicio5.Persona p
-WHERE NOT EXISTS (
-	SELECT 1
-	FROM ejercicio5.Pelicula peli
-	WHERE NOT EXISTS (
-		SELECT 1
-		FROM ejercicio5.Actua a
-		WHERE a.idp = p.idp AND a.idpel = peli.idpel AND paisorigen = 'EEUU'
-	)
-)
+-- 7 - Personas (todos los datos) que han actuado en todas las películas.
+SELECT nombre, fechanac, paisnac
+FROM ejercicio5.persona P	-- dividendo	-	Esto 	
+WHERE NOT EXISTS
+	(SELECT *
+	FROM ejercicio5.pelicula PEL	-- Divisor	-	Tiene que estar en todas estas
+	WHERE NOT EXISTS
+		(SELECT * 
+		FROM ejercicio5.actua A
+		WHERE P.idp = A.idp and PEL.idpel = A.idpel))	-- Condicion de union
+
+-- 8 - Personas (todos los datos) que han actuado en todas las películas producidas por EEUU. 
+SELECT nombre, fechanac, paisnac
+FROM ejercicio5.persona P
+WHERE NOT EXISTS
+	(SELECT *
+	FROM ejercicio5.pelicula PEL
+	WHERE paisorigen = 'EEUU' and NOT EXISTS
+		(SELECT * 
+		FROM ejercicio5.actua A
+		WHERE P.idp = A.idp and PEL.idpel = A.idpel))
+
+-- 9 - Personas (todos los datos) que han actuado en todas las películas dirigidas por Keanu Reeves. 
+SELECT nombre, fechanac, paisnac, 
+FROM ejercicio5.persona P1 
+NATURAL JOIN ejercicio5.actua A
+JOIN (
+	SELECT idpel 
+	FROM ejercicio5.persona P 
+	NATURAL JOIN ejercicio5.dirige D
+	WHERE P.nombre = 'Keanu Reeves'
+	) AS T ON A.idpel = T.idpel
+
+-- 10 -  Personas (nombre) que han actuado en ambas  películas: The Matrix y The Matrix Revolutions.
+-- Metodo INTERSEC
+SELECT nombre
+FROM ejercicio5.persona 
+NATURAL JOIN ejercicio5.actua
+NATURAL JOIN ejercicio5.pelicula
+WHERE titulo = 'The Matrix'
+INTERSECT
+SELECT nombre
+FROM ejercicio5.persona 
+NATURAL JOIN ejercicio5.actua
+NATURAL JOIN ejercicio5.pelicula
+WHERE titulo = 'The Matrix Revolutions'
+
+-- Metodo AND IN
+SELECT nombre
+FROM ejercicio5.persona 
+WHERE idp IN
+	(SELECT idp 
+	FROM ejercicio5.actua
+	NATURAL JOIN ejercicio5.pelicula
+	WHERE titulo = 'The Matrix')
+and idp IN
+	(SELECT idp
+	FROM ejercicio5.actua
+	NATURAL JOIN ejercicio5.pelicula
+	WHERE titulo = 'The Matrix Revolutions')
+
+-- 11 -  Personas (nombre) que han participado (como actor o director) en ambas películas: The Matrix y The Matrix Revolutions. 
+SELECT nombre 
+FROM ejercicio5.persona
+WHERE idp IN
+	(SELECT A.idp
+	FROM ejercicio5.actua A
+	JOIN ejercicio5.dirige D ON A.idp = D.idp 
+	JOIN ejercicio5.pelicula PEL ON PEL.idpel = D.idpel
+	WHERE titulo = 'The Matrix')
+and idp IN
+	(SELECT A.idp
+	FROM ejercicio5.actua A
+	JOIN ejercicio5.dirige D ON A.idp = D.idp 
+	JOIN ejercicio5.pelicula PEL ON PEL.idpel = D.idpel
+	WHERE titulo = 'The Matrix Revolutions')
+
+-- 12 - Persona/s (todos los datos) que ha/n dirigido más películas. 
+-- REVISAR
+SELECT nombre, fechanac, paisnac
+FROM ejercicio5.persona 
+NATURAL JOIN ejercicio5.dirige 
+GROUP BY nombre
+HAVING MAX(*)
+
+--  13 - Personas (todos sus datos) que han participado actuando y dirigiendo la misma película.
+SELECT nombre, fechanac, paisnac
+FROM ejercicio5.per
+
+
+

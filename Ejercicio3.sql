@@ -235,3 +235,13 @@ WHERE c.cH < 30
 GROUP BY p.correo, p.nomU, p.nombre
 HAVING COUNT(*) >= 1;
 
+-- 22 - Pares de alumnos (todos los datos) que cursaron algún curso en común.
+SELECT P1.nombre, P1.correo, P2.nombre, P2.correo
+FROM 
+  (SELECT I1.correo, I1.nom, A1.nombre FROM ejercicio3.insc I1 JOIN ejercicio3.pers A1 ON I1.correo = A1.correo) AS P1,
+  (SELECT I2.correo, I2.nom, A2.nombre FROM ejercicio3.insc I2 JOIN ejercicio3.pers A2 ON I2.correo = A2.correo) AS P2
+WHERE 
+  P1.nom = P2.nom AND
+  P1.correo < P2.correo;
+
+
